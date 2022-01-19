@@ -6,10 +6,10 @@ var playerY;
 window.onload = function(){
     
     
-    var left_arrow  = 37;
-    var up_arrow	= 38;
-    var right_arrow	= 39;
-    var down_arrow	= 40;
+    const left_arrow   = 37;
+    const up_arrow	   = 38;
+    const right_arrow  = 39;
+    const down_arrow   = 40;
 
     
     window.onkeydown= function(gfg)
