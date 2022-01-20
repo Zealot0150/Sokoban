@@ -2,7 +2,6 @@
 
 /*   Enum of CSS Classes for the static elements   */
 
-
 var Tiles = {
     Wall: "tile-wall",
     Space: "tile-space",

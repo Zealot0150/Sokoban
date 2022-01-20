@@ -1,5 +1,3 @@
-
-
 var playerX;
 var playerY;
 
@@ -11,149 +9,175 @@ window.onload = function(){
     const right_arrow  = 39;
     const down_arrow   = 40;
 
+    PrintBoard();
+
     
     window.onkeydown= function(gfg)
-    {
+    {     
         switch(gfg.keyCode)
         {
             case left_arrow:
-                move(0,-1);
-                break;
-            case right_arrow:
-                move(0,1);
-                break;
-            case up_arrow:
                 move(-1,0);
                 break;
-            case down_arrow:
+            case right_arrow:
                 move(1,0);
                 break;
-        }    
+            case up_arrow:
+                move(0,-1);
+                break;
+            case down_arrow:
+                move(0,1);
+                break;
+        }
+        gfg.preventDefault();    
         return false;
     };   
-    PrintBoard();
-    
-    document.body.focus() 
+}
+
+
+function makeXY(x,y)
+{
+    return "c" + x + "r" + y;
+}
+
+function GetElementXY(x,y)
+{
+    return  document.getElementById(makeXY(x,y));
 }
 
 function move(x,y)
 {
-    
     var newX = playerX + x;
     var newY = playerY + y;
     var canMove = false;
-    
-    if(tileMap01.mapGrid[newX][newY] == "B")
+    var elementAtNewXY = GetElementXY( newX,newY);
+    var oldElement = GetElementXY( playerX,playerY);
+
+    if((elementAtNewXY.className == Entities.Block)||
+       (elementAtNewXY.className == Entities.BlockDone))
     {
         // can rock move to new pos, if so move rock
         var rockX = (2 * x) + playerX;
         var rockY = (2 * y) + playerY;
-        if(tileMap01.mapGrid[rockX][rockY] == " " ||
-           tileMap01.mapGrid[rockX][rockY] == "G")
+        var nextElement =  GetElementXY( rockX,rockY);
 
-         {  
-             tileMap01.mapGrid[rockX][rockY] = "B";
-             if(InWinningArea(newX,newY))
-               tileMap01.mapGrid[newX][newY] = "G";
-             else
-               tileMap01.mapGrid[newX][newY] = " ";
+         
+        if( nextElement.className == Tiles.Goal )
+        {  
+            nextElement.className = Entities.BlockDone;
              canMove = true;
         }
+        else if(nextElement.className == Tiles.Space)
+        {
+            nextElement.className = Entities.Block;
+            canMove = true;
+        }
+
     }
-    else if(tileMap01.mapGrid[newX][newY] == " ")
+    if(elementAtNewXY.className == Tiles.Space)
       canMove = true;
-    else if(tileMap01.mapGrid[newX][newY] == "G")
+    else if(elementAtNewXY.className == Tiles.Goal)
       canMove = true;   
 
     if(canMove)
     {
-      playerX = newX
-      playerY = newY;
-      PrintBoard();
+        if(InWinningArea(playerX,playerY))
+            oldElement.className = Tiles.Goal;
+        else
+            oldElement.className = Tiles.Space;
+
+        elementAtNewXY.className = Entities.Character;
+        playerX = newX
+        playerY = newY;
+      
+        if(CheckForWin())
+        {
+            var label = document.createElement("H1");
+            label.textContent = "You have won!";
+            document.body.appendChild(label);            
+        }
     }
 }
 
 
-
-const removeChilds = (parent) => {
-    while (parent.lastChild) {
-        parent.removeChild(parent.lastChild);
-    }
-};
 
 
 function PrintBoard()
 {
-    removeChilds(document.body)
     for (var row = 0; row < 16; ++row){           
         var rowelement = document.createElement("DIV");
-        rowelement.className = "row"
+        rowelement.className = "row";
                 
         for (var col = 0; col < 19; ++col){
           var square = document.createElement("DIV")
-          square.className = "square"
           square.style.border = "solid";
+          square.id = makeXY(col,row);
           
           var string =  tileMap01.mapGrid[row][col];
-            if(( playerX == row) && (playerY == col))
-            {
-              square.style.backgroundColor = "yellow";   
-            }
-          else if(string == "B")
-            square.style.backgroundColor = "red";
+          if(string == "B")
+          {
+            square.className = Entities.Block; 
+          }
+            
           else if(string == " ")
-            square.style.backgroundColor = "white";
+          {
+            square.className = Tiles.Space;
+          }
           else if(string == "P")
           {
               playerX = col;
               playerY = row;
-              square.style.backgroundColor = "yellow";
-            /* just remove P and change to blank*/
-            tileMap01.mapGrid[row][col] = " ";
+              square.className = Entities.Character;
           }
             
           else if(string == "W")
-            square.style.backgroundColor = "black";
+          {
+            square.className = Tiles.Wall;
+          }
+            
           else if(string == "G")
-            square.style.backgroundColor = "green";
-                            
+          {
+            square.className = Tiles.Goal;
+          }                                        
             rowelement.appendChild(square)
         }
         document.body.appendChild(rowelement)        
      }
-     if(CheckForWin())
-        {
-            var label = document.createElement("H1");
-            label.textContent = "You have won!";
-            document.body.appendChild(label);
-        }
 }
+
+
+var haveWon = false;
 function CheckForWin()
 {
-    if(
-     (tileMap01.mapGrid[9][16] === "B")
-     &&
-
-     (tileMap01.mapGrid[10][16] === "B")
-     &&
-     (tileMap01.mapGrid[11][16] === "B")
-     &&
-     (tileMap01.mapGrid[9][17] === "B")
-     &&
-     (tileMap01.mapGrid[10][17] === "B")
-     &&
-     (tileMap01.mapGrid[11][17] === "B")
-     )
-     return true;
-    else
-      return false; 
+    if(haveWon)
+      return false;
+  if(
+    (GetElementXY(16,9).className == Entities.BlockDone)
+      &&
+    (GetElementXY(16,10).className == Entities.BlockDone)
+      &&
+    (GetElementXY(16,11).className == Entities.BlockDone)
+      &&
+    (GetElementXY(17,9).className == Entities.BlockDone)
+      &&
+    (GetElementXY(17,10).className == Entities.BlockDone)
+      &&
+    (GetElementXY(17,11).className == Entities.BlockDone)
+  )
+  {
+    haveWon = true;
+    return true;
+  }
+  else
+    return false;    
 }
+
 
 function InWinningArea(x, y)
 {
-return ((x > 8 ) &&
-        (x < 12) &&
-        (y < 18) &&
-        (y > 15));
+return ((y > 8 ) &&
+        (y < 12) &&
+        (x < 18) &&
+        (x > 15));
 }
 
